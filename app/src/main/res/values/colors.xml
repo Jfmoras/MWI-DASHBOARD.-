@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="ic_launcher_background">#141810</color>
+    <color name="md_theme_light_primary">#E2B340</color>
+    <color name="md_theme_light_onPrimary">#141810</color>
+    <color name="md_theme_light_surface">#F4EFE2</color>
+    <color name="md_theme_light_onSurface">#141810</color>
+    <color name="md_theme_dark_primary">#E2B340</color>
+    <color name="md_theme_dark_onPrimary">#141810</color>
+    <color name="md_theme_dark_surface">#141810</color>
+    <color name="md_theme_dark_onSurface">#F4EFE2</color>
+</resources>
