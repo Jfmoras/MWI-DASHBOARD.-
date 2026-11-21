@@ -12,11 +12,13 @@ import androidx.navigation.NavController
 import com.moraswood.mwidashboard.data.CalcItem
 import com.moraswood.mwidashboard.data.CalcLogic
 import com.moraswood.mwidashboard.data.CalcRow
+import com.moraswood.mwidashboard.data.Costing
 import androidx.compose.foundation.text.KeyboardOptions
 
 @Composable
 fun QuotationEstimationScreen(navController: NavController) {
     var items by remember { mutableStateOf(listOf(CalcItem())) }
+    var costings by remember { mutableStateOf(listOf(Costing())) }
     var selectedTab by remember { mutableIntStateOf(0) }
 
     Column(modifier = Modifier.fillMaxSize()) {
@@ -29,7 +31,7 @@ fun QuotationEstimationScreen(navController: NavController) {
 
         when (selectedTab) {
             0 -> CftCalculator(items = items, onItemsChange = { items = it })
-            1 -> Text("Estimation coming soon", modifier = Modifier.padding(16.dp))
+            1 -> EstimationScreen(items = items, costings = costings, onCostingsChange = { costings = it })
             2 -> Text("Quotation coming soon", modifier = Modifier.padding(16.dp))
             3 -> Text("Saved notes / quotations / calculations coming soon", modifier = Modifier.padding(16.dp))
         }
@@ -84,10 +86,46 @@ fun CftCalculator(items: List<CalcItem>, onItemsChange: (List<CalcItem>) -> Unit
     }
 }
 
+@Composable
+fun EstimationScreen(items: List<CalcItem>, costings: List<Costing>, onCostingsChange: (List<Costing>) -> Unit) {
+    // Ensure costings list matches items
+    val adjustedCostings = if (costings.size < items.size) costings + List(items.size - costings.size) { Costing() } else costings
+
+    LazyColumn(modifier = Modifier.weight(1f).padding(horizontal = 16.dp)) {
+        itemsIndexed(items) { index, item ->
+            val costing = adjustedCostings.getOrElse(index) { Costing() }
+            Card(modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp)) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(item.name.ifBlank { "Item ${index + 1}" }, style = MaterialTheme.typography.titleMedium)
+                    val (cft, kol) = CalcLogic.itemTotals(item)
+                    Text("CFT: %.3f | KOL: %.3f".format(cft, kol))
+
+                    OutlinedTextField(value = costing.cftRate, onValueChange = { updateCosting(adjustedCostings, index, costing.copy(cftRate = it), onCostingsChange) }, label = { Text("CFT Rate") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    OutlinedTextField(value = costing.kolRate, onValueChange = { updateCosting(adjustedCostings, index, costing.copy(kolRate = it), onCostingsChange) }, label = { Text("KOL Rate") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    OutlinedTextField(value = costing.labourLumpsum, onValueChange = { updateCosting(adjustedCostings, index, costing.copy(labourLumpsum = it), onCostingsChange) }, label = { Text("Labour (lumpsum)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    OutlinedTextField(value = costing.polishLumpsum, onValueChange = { updateCosting(adjustedCostings, index, costing.copy(polishLumpsum = it), onCostingsChange) }, label = { Text("Polish (lumpsum)") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    OutlinedTextField(value = costing.consumables, onValueChange = { updateCosting(adjustedCostings, index, costing.copy(consumables = it), onCostingsChange) }, label = { Text("Consumables") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    OutlinedTextField(value = costing.other, onValueChange = { updateCosting(adjustedCostings, index, costing.copy(other = it), onCostingsChange) }, label = { Text("Other") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+                    OutlinedTextField(value = costing.sellingPrice, onValueChange = { updateCosting(adjustedCostings, index, costing.copy(sellingPrice = it), onCostingsChange) }, label = { Text("Selling Price") }, keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Decimal))
+
+                    val (cost, selling, profit) = CalcLogic.costingResult(item, costing)
+                    Text("Cost: ₹%.0f | Selling: ₹%.0f | Profit: ₹%.0f".format(cost, selling, profit), modifier = Modifier.padding(top = 8.dp))
+                }
+            }
+        }
+    }
+}
+
 private fun updateRow(items: List<CalcItem>, itemIdx: Int, rowIdx: Int, newRow: CalcRow, onItemsChange: (List<CalcItem>) -> Unit) {
     val newItems = items.toMutableList()
     val newRows = items[itemIdx].rows.toMutableList()
     newRows[rowIdx] = newRow
     newItems[itemIdx] = items[itemIdx].copy(rows = newRows)
     onItemsChange(newItems)
+}
+
+private fun updateCosting(costings: List<Costing>, index: Int, newCosting: Costing, onCostingsChange: (List<Costing>) -> Unit) {
+    val newList = costings.toMutableList()
+    if (index < newList.size) newList[index] = newCosting else newList.add(newCosting)
+    onCostingsChange(newList)
 }
