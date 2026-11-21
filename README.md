@@ -1,20 +1,21 @@
 # MWI Dashboard - Native Android
 
-Native Jetpack Compose app for Moras Wood Industries.
+Native Jetpack Compose + Room app for Moras Wood Industries.
 
-## Sections
-- Quotation & Estimation
-- Projects & Payments
-- Machines
-- Settings
+## Implemented sections
+- **Quotation & Estimation**
+  - CFT Calculator (live totals, add items/rows)
+  - Estimation (rates, labour, polish, cost/profit)
+  - Quotation (line items, discount, GST, grand total)
+- **Projects & Payments** (Room database – add projects, list with quoted price)
+- **Machines** (basic list, add machine, status)
+- **Settings** (placeholder)
+- **Inventory** (placeholder)
 
 ## Building the APK
-
-1. Go to the **Actions** tab of this repository.
+1. Go to the **Actions** tab.
 2. Select **Build MWI Dashboard APK**.
-3. Click **Run workflow** (or it will run automatically on push).
-4. After it finishes, download the `MWI-Dashboard-debug-apk` artifact.
+3. Click **Run workflow**.
+4. Download the `MWI-Dashboard-debug-apk` artifact.
 
-You can also open the project in Android Studio (JDK 17) and run it directly.
-
-This is the initial native skeleton. Core screens and logic will be added next.
+Open in Android Studio (JDK 17) to run and extend.
