@@ -16,6 +16,18 @@ data class CalcItem(
     var rows: MutableList<CalcRow> = mutableListOf(CalcRow())
 )
 
+data class Costing(
+    var cftRate: String = "",
+    var kolRate: String = "",
+    var labourRate: String = "",
+    var labourLumpsum: String = "",
+    var polishRate: String = "",
+    var polishLumpsum: String = "",
+    var consumables: String = "",
+    var other: String = "",
+    var sellingPrice: String = ""
+)
+
 object CalcLogic {
     private fun num(v: String) = v.toDoubleOrNull() ?: 0.0
 
@@ -58,5 +70,16 @@ object CalcLogic {
             if (mode == "CFT") cft += value else kol += value
         }
         return cft to kol
+    }
+
+    fun costingResult(item: CalcItem, costing: Costing): Triple<Double, Double, Double> {
+        val (cft, kol) = itemTotals(item)
+        val wood = cft * num(costing.cftRate) + kol * num(costing.kolRate)
+        val labour = if (costing.labourLumpsum.isNotBlank()) num(costing.labourLumpsum) else 0.0
+        val polish = if (costing.polishLumpsum.isNotBlank()) num(costing.polishLumpsum) else 0.0
+        val cost = wood + labour + polish + num(costing.consumables) + num(costing.other)
+        val selling = num(costing.sellingPrice)
+        val profit = selling - cost
+        return Triple(cost, selling, profit)
     }
 }
